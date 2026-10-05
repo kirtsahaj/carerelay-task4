@@ -35,7 +35,7 @@ RLS is enabled and there is no anon/authenticated policy. Database access happen
 Set these in Vercel Project Settings → Environment Variables:
 
 - `GEMINI_API_KEY`
-- `GEMINI_MODEL` = `gemini-3.8-flash` (optional; default in code)
+- `GEMINI_MODEL` = `gemini-3.1-flash-lite` (optional; default in code)
 - `SUPABASE_URL`
 - `SUPABASE_SERVICE_KEY`
 
