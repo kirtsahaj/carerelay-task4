@@ -40,7 +40,7 @@ Vercel environment variable: `GEMINI_API_KEY`.
 GitHub repository search for the Gemini API-key prefix: **No results**. Also ran the repository secret-check script before deployment.
 
 **4. Gemini model used**  
-`gemini-3.8-flash` (unless the deployment environment explicitly overrides `GEMINI_MODEL`).
+`gemini-2.5-flash` (unless the deployment environment explicitly overrides `GEMINI_MODEL`).
 
 **Serverless function code**  
 Paste `app/api/handoff/route.js` into the worksheet.
