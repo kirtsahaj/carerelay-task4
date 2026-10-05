@@ -28,30 +28,36 @@ async function callGemini(input) {
   const key = process.env.GEMINI_API_KEY;
   if (!key) throw new Error('Gemini API key is not configured.');
 
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(GEMINI_MODEL)}:generateContent`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-goog-api-key': key,
-      },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
-        contents: [{ role: 'user', parts: [{ text: buildUserPrompt(input) }] }],
-        generationConfig: {
-          temperature: 0.25,
-          maxOutputTokens: MAX_OUTPUT_TOKENS,
-          responseMimeType: 'application/json',
-          responseSchema: RESPONSE_SCHEMA,
+  let response;
+  let json;
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(GEMINI_MODEL)}:generateContent`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-goog-api-key': key,
         },
-      }),
-    },
-  );
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+          contents: [{ role: 'user', parts: [{ text: buildUserPrompt(input) }] }],
+          generationConfig: {
+            temperature: 0.25,
+            maxOutputTokens: MAX_OUTPUT_TOKENS,
+            responseMimeType: 'application/json',
+            responseSchema: RESPONSE_SCHEMA,
+          },
+        }),
+      },
+    );
 
-  const json = await response.json();
-  if (!response.ok) {
-    throw new Error(json?.error?.message || `Gemini request failed (${response.status}).`);
+    json = await response.json();
+    if (response.ok) break;
+    if (![429, 503].includes(response.status) || attempt === 4) {
+      throw new Error(json?.error?.message || `Gemini request failed (${response.status}).`);
+    }
+    await new Promise((resolve) => setTimeout(resolve, 500 * (attempt + 1)));
   }
 
   const text = json?.candidates?.[0]?.content?.parts?.map((part) => part.text || '').join('') || '';
